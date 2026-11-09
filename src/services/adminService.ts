@@ -1,11 +1,13 @@
-import adminApi from "@/api/adminApi";
+import adminOrderApi from "@/api/adminOrderApi";
+import adminProductApi from "@/api/adminProductApi";
+import adminUserApi from "@/api/adminUserApi";
+import adminStatsApi from "@/api/adminStatsApi";
 import {
   AdminDashboardStats,
   Order,
   OrderStatus,
   PageResponse,
   Product,
-  User,
 } from "@/types";
 
 export interface DashboardOverview {
@@ -20,38 +22,29 @@ export const adminService = {
    */
   async getDashboardOverview(): Promise<DashboardOverview> {
     try {
-      const [ordersRes, productsRes, usersRes] = await Promise.all([
-        adminApi.getOrders(0, 50),
-        adminApi.getProducts(0, 10),
-        adminApi.getUsers(0, 10).catch(() => ({ data: { totalElements: 0, items: [] } })),
+      const [ovRes, ordersRes, productsRes] = await Promise.all([
+        adminStatsApi.getOverview().catch(() => null),
+        adminOrderApi.getOrders({ page: 0, size: 5, sortBy: "createdAt", sortDir: "desc" }),
+        adminProductApi.getProducts({ page: 0, size: 5, sortBy: "createdAt", sortDir: "desc" }),
       ]);
 
+      const ov = ovRes?.data;
       const ordersData = ordersRes.data || { totalElements: 0, items: [] };
       const productsData = productsRes.data || { totalElements: 0, items: [] };
-      const usersData = usersRes.data || { totalElements: 0, items: [] };
-
-      const allOrders: Order[] = ordersData.items || [];
-
-      const totalRevenue = allOrders
-        .filter((order) => order.status !== "CANCELLED")
-        .reduce((sum, order) => sum + (order.finalAmount || order.totalAmount || 0), 0);
 
       const stats: AdminDashboardStats = {
-        totalRevenue,
-        totalOrders: ordersData.totalElements || allOrders.length,
-        totalCustomers: usersData.totalElements || 128,
-        totalProducts: productsData.totalElements || productsData.items.length,
+        totalRevenue: ov?.totalRevenue || 0,
+        totalOrders: ov?.totalOrders || ordersData.totalElements,
+        totalCustomers: ov?.newUsersCount || 0,
+        totalProducts: productsData.totalElements || 0,
         revenueGrowth: 18.2,
         ordersGrowth: 12.5,
       };
 
-      const recentOrders = allOrders.slice(0, 5);
-      const recentProducts = (productsData.items || []).slice(0, 5);
-
       return {
         stats,
-        recentOrders,
-        recentProducts,
+        recentOrders: ordersData.items || [],
+        recentProducts: productsData.items || [],
       };
     } catch (error) {
       console.error("Lỗi khi nạp dữ liệu thống kê Dashboard:", error);
@@ -67,7 +60,7 @@ export const adminService = {
     size: number = 10,
     status?: OrderStatus | string
   ): Promise<PageResponse<Order>> {
-    const res = await adminApi.getOrders(page, size, status);
+    const res = await adminOrderApi.getOrders({ page, size, status });
     return res.data;
   },
 
@@ -75,7 +68,7 @@ export const adminService = {
    * Cập nhật trạng thái đơn hàng
    */
   async updateOrderStatus(orderId: string, status: OrderStatus): Promise<Order> {
-    const res = await adminApi.updateOrderStatus(orderId, status);
+    const res = await adminOrderApi.updateOrderStatus(orderId, status);
     return res.data;
   },
 };

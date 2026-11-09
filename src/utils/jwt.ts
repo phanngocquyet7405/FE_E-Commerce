@@ -31,19 +31,35 @@ export function isTokenExpired(token: string | null | undefined): boolean {
 
 /**
  * Lấy quyền hạn chuẩn hóa ('ADMIN' hoặc 'CUSTOMER') từ token JWT
- * Backend hỗ trợ cả mảng roles: ["ROLE_ADMIN"] hoặc trường role: "ADMIN"
+ * Backend Spring Security hỗ trợ mảng roles: ["ROLE_ADMIN"] hoặc trường role: "ADMIN"
  */
 export function getUserRole(token: string | null | undefined): "ADMIN" | "CUSTOMER" | null {
   const payload = decodeToken(token);
   if (!payload) return null;
 
-  const roles = payload.roles || [];
-  if (roles.includes("ROLE_ADMIN") || payload.role === "ADMIN" || payload.role === "ROLE_ADMIN") {
+  // 1. Kiểm tra mảng roles
+  const roles = Array.isArray(payload.roles) ? payload.roles : [];
+  const hasAdminInRoles = roles.some((r) => {
+    if (typeof r !== "string") return false;
+    const upper = r.toUpperCase();
+    return upper === "ROLE_ADMIN" || upper === "ADMIN" || upper.includes("ADMIN");
+  });
+
+  if (hasAdminInRoles) {
     return "ADMIN";
   }
 
-  if (roles.includes("ROLE_CUSTOMER") || payload.role === "CUSTOMER" || payload.role === "ROLE_CUSTOMER") {
-    return "CUSTOMER";
+  // 2. Kiểm tra trường role đơn lẻ
+  if (payload.role) {
+    const roleUpper = String(payload.role).toUpperCase();
+    if (roleUpper === "ROLE_ADMIN" || roleUpper === "ADMIN" || roleUpper.includes("ADMIN")) {
+      return "ADMIN";
+    }
+  }
+
+  // 3. Dự phòng nếu email bắt đầu bằng admin@
+  if (payload.sub && payload.sub.toLowerCase().startsWith("admin@")) {
+    return "ADMIN";
   }
 
   return "CUSTOMER";

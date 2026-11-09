@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ToastProvider } from "@/components/ui/toast";
 
 export const metadata: Metadata = {
-  title: "ShopDev E-Commerce | Mua Sắm Trực Tuyến Đẳng Cấp",
+  title: "ShopDev Admin Portal | Bảng Điều Khiển Quản Trị Hệ Thống",
   description:
-    "Hệ thống thương mại điện tử hiện đại xây dựng trên nền tảng Next.js 14 App Router, TypeScript, Tailwind CSS và Spring Boot 3 Backend.",
+    "Hệ thống quản trị thương mại điện tử chuyên nghiệp xây dựng trên Next.js 14 App Router, TypeScript, Tailwind CSS kết nối Spring Boot 3 & MongoDB.",
 };
 
 export default function RootLayout({
@@ -15,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="vi" suppressHydrationWarning>
       <body className="min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
-        {children}
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );

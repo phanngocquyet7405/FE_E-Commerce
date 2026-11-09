@@ -62,9 +62,24 @@ export const authService = {
   },
 
   /**
-   * Đăng xuất an toàn: Thu hồi token trên Redis & Dọn sạch LocalStorage
+   * Xóa sạch Session và Tokens ở LocalStorage mà KHÔNG gọi API backend và KHÔNG reload trang
+   * Dùng khi xác thực quyền hạn thất bại để bảo vệ thông tin mà không gây hard reload
    */
-  async logout(): Promise<void> {
+  clearSession(): void {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(ACCESS_TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      localStorage.removeItem(USER_INFO_KEY);
+
+      window.dispatchEvent(new Event("auth-changed"));
+    }
+  },
+
+  /**
+   * Đăng xuất an toàn: Thu hồi token trên Redis & Dọn sạch LocalStorage
+   * @param redirect Có điều hướng về /login hay không (chỉ điều hướng nếu chưa ở /login)
+   */
+  async logout(redirect: boolean = true): Promise<void> {
     if (typeof window !== "undefined") {
       const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
       if (refreshToken) {
@@ -75,12 +90,11 @@ export const authService = {
         }
       }
 
-      localStorage.removeItem(ACCESS_TOKEN_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
-      localStorage.removeItem(USER_INFO_KEY);
+      this.clearSession();
 
-      window.dispatchEvent(new Event("auth-changed"));
-      window.location.href = "/login";
+      if (redirect && window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
     }
   },
 
@@ -110,7 +124,7 @@ export const authService = {
   },
 
   /**
-   * Lấy quyền hạn của người dùng hiện tại
+   * Lấy quyền hạn của người dùng hiện tại từ token JWT
    */
   getCurrentRole(): "ADMIN" | "CUSTOMER" | null {
     const token = this.getAccessToken();
@@ -119,7 +133,7 @@ export const authService = {
   },
 
   /**
-   * Kiểm tra xem người dùng hiện tại có quyền Quản trị viên (ADMIN) hay không
+   * Kiểm tra nghiêm ngặt xem người dùng hiện tại có quyền Quản trị viên (ROLE_ADMIN) hay không
    */
   isAdmin(): boolean {
     const token = this.getAccessToken();

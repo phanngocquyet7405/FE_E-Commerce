@@ -39,15 +39,17 @@ axiosClient.interceptors.response.use(
     if (typeof window !== "undefined" && error.response) {
       const status = error.response.status;
 
-      // Khi bị 401 Unauthorized (Token hết hạn hoặc bị thu hồi)
+      // Khi bị 401 Unauthorized (Token hết hạn hoặc không hợp lệ)
+      // CHỈ kích hoạt nếu không phải đang ở trang /login hoặc /register
       if (status === 401) {
         const currentPath = window.location.pathname;
         if (!currentPath.includes("/login") && !currentPath.includes("/register")) {
           localStorage.removeItem("access_token");
           localStorage.removeItem("refresh_token");
           localStorage.removeItem("user_info");
-          
-          window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+          localStorage.removeItem("dev_admin_override");
+
+          window.location.href = `/login?error=session_expired&redirect=${encodeURIComponent(currentPath)}`;
         }
       }
     }
