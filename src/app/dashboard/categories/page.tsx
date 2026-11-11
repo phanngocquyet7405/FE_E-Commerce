@@ -159,13 +159,15 @@ export default function AdminCategoriesBrandsPage() {
     setUploadingLogo(true);
     try {
       const res = await mediaApi.uploadFile(file);
-      if (res.data?.url) {
-        setBrandForm((prev) => ({ ...prev, logoUrl: res.data.url }));
+      const uploadedUrl = res.data?.url || (res.data as any)?.fileUrl;
+      if (uploadedUrl) {
+        setBrandForm((prev) => ({ ...prev, logoUrl: uploadedUrl }));
         success("Tải logo thành công", "Logo đã được tải lên Cloudinary.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Lỗi tải logo:", err);
-      toastError("Lỗi", "Tải logo thất bại.");
+      const serverMsg = err?.response?.data?.message || "Tải logo thất bại.";
+      toastError("Lỗi", serverMsg);
     } finally {
       setUploadingLogo(false);
     }

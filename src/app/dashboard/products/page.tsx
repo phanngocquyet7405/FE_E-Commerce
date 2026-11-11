@@ -209,13 +209,17 @@ export default function AdminProductsPage() {
     setUploadingImage(true);
     try {
       const res = await mediaApi.uploadFile(file);
-      if (res.data?.url) {
-        setFormData((prev) => ({ ...prev, thumbnailUrl: res.data.url }));
+      const uploadedUrl = res.data?.url || res.data?.fileUrl;
+      if (uploadedUrl) {
+        setFormData((prev) => ({ ...prev, thumbnailUrl: uploadedUrl }));
         success("Tải ảnh thành công", "Ảnh đã được tải lên Cloudinary.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Lỗi tải ảnh:", err);
-      toastError("Tải ảnh thất bại", "Chỉ hỗ trợ file ảnh định dạng JPG, PNG, WEBP.");
+      const serverMsg =
+        err?.response?.data?.message ||
+        "Tải ảnh thất bại. Vui lòng kiểm tra định dạng file (JPG, PNG, WEBP) hoặc cấu hình Cloudinary.";
+      toastError("Tải ảnh thất bại", serverMsg);
     } finally {
       setUploadingImage(false);
     }
@@ -231,16 +235,18 @@ export default function AdminProductsPage() {
       const fileList = Array.from(files);
       const res = await mediaApi.uploadMultipleFiles(fileList);
       if (res.data) {
-        const newUrls = res.data.map((item) => item.url);
+        const newUrls = res.data.map((item) => item.url || item.fileUrl).filter(Boolean) as string[];
         setFormData((prev) => ({
           ...prev,
           images: [...(prev.images || []), ...newUrls],
         }));
         success("Tải album thành công", `Đã thêm ${newUrls.length} ảnh vào album sản phẩm.`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Lỗi upload gallery:", err);
-      toastError("Thất bại", "Không thể tải lên album ảnh.");
+      const serverMsg =
+        err?.response?.data?.message || "Không thể tải lên album ảnh.";
+      toastError("Thất bại", serverMsg);
     } finally {
       setUploadingGallery(false);
     }

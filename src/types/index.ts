@@ -335,7 +335,12 @@ export interface TopSellingProductResponse {
 
 export interface MediaUploadResponse {
   url: string;
+  fileUrl?: string;
+  fileName?: string;
   publicId?: string;
+  originalName?: string;
+  contentType?: string;
   format?: string;
   bytes?: number;
+  size?: number;
 }
