@@ -370,7 +370,7 @@ export default function AdminProductsPage() {
       {/* HEADER & THAO TÁC */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
             <span>Quản Lý Sản Phẩm & Kho Hàng</span>
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200">
               {productsData.totalElements} sản phẩm
@@ -381,12 +381,12 @@ export default function AdminProductsPage() {
           </p>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <Button
             variant="outline"
             size="sm"
             onClick={handleExportCsv}
-            className="border-input hover:bg-muted font-semibold text-xs flex items-center gap-1.5 h-9 rounded-xl"
+            className="flex-1 sm:flex-none border-input hover:bg-muted font-semibold text-xs flex items-center justify-center gap-1.5 h-9 rounded-xl"
             title="Tải danh sách kiểm kê kho hàng về máy"
           >
             <Download className="h-3.5 w-3.5" />
@@ -398,7 +398,7 @@ export default function AdminProductsPage() {
             size="sm"
             onClick={fetchProducts}
             disabled={loading}
-            className="border-input hover:bg-muted font-semibold text-xs flex items-center gap-1.5 h-9 rounded-xl"
+            className="flex-1 sm:flex-none border-input hover:bg-muted font-semibold text-xs flex items-center justify-center gap-1.5 h-9 rounded-xl"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
             <span>Làm mới</span>
@@ -407,7 +407,7 @@ export default function AdminProductsPage() {
           <Button
             size="sm"
             onClick={handleOpenCreateModal}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs flex items-center gap-1.5 h-9 rounded-xl shadow-md shadow-indigo-600/20"
+            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 h-9 rounded-xl shadow-md shadow-indigo-600/20"
           >
             <Plus className="h-4 w-4" />
             <span>Thêm Sản Phẩm Mới</span>
@@ -493,149 +493,268 @@ export default function AdminProductsPage() {
       {/* BẢNG DỮ LIỆU SẢN PHẨM */}
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Sản Phẩm</TableHead>
-                <TableHead>Mã SKU</TableHead>
-                <TableHead>Danh Mục</TableHead>
-                <TableHead>Giá Niêm Yết</TableHead>
-                <TableHead>Tồn Kho</TableHead>
-                <TableHead>Trạng Thái</TableHead>
-                <TableHead className="text-right">Hành Động</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableSkeletonRows rows={5} cols={7} />
-              ) : productsData.items.length === 0 ? (
+          {/* 1. DESKTOP VIEW: DATA TABLE (Hidden on mobile < md) */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-xs text-muted-foreground">
-                    Không tìm thấy sản phẩm nào phù hợp.
-                  </TableCell>
+                  <TableHead>Sản Phẩm</TableHead>
+                  <TableHead>Mã SKU</TableHead>
+                  <TableHead>Danh Mục</TableHead>
+                  <TableHead>Giá Niêm Yết</TableHead>
+                  <TableHead>Tồn Kho</TableHead>
+                  <TableHead>Trạng Thái</TableHead>
+                  <TableHead className="text-right">Hành Động</TableHead>
                 </TableRow>
-              ) : (
-                productsData.items.map((prod) => (
-                  <TableRow key={prod.id} className="hover:bg-muted/40 transition-colors">
-                    {/* Cột Tên & Ảnh */}
-                    <TableCell>
-                      <div className="flex items-center space-x-3">
-                        <div
-                          className="h-10 w-10 relative rounded-lg overflow-hidden bg-muted shrink-0 border cursor-pointer group"
-                          onClick={() =>
-                            handleOpenLightbox(
-                              prod.thumbnailUrl ||
-                                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80",
-                              prod.name
-                            )
-                          }
-                          title="Click để phóng to ảnh"
-                        >
-                          <Image
-                            src={
-                              prod.thumbnailUrl ||
-                              "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&auto=format&fit=crop&q=80"
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableSkeletonRows rows={5} cols={7} />
+                ) : productsData.items.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-12 text-xs text-muted-foreground">
+                      Không tìm thấy sản phẩm nào phù hợp.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  productsData.items.map((prod) => (
+                    <TableRow key={prod.id} className="hover:bg-muted/40 transition-colors">
+                      {/* Cột Tên & Ảnh */}
+                      <TableCell>
+                        <div className="flex items-center space-x-3">
+                          <div
+                            className="h-10 w-10 relative rounded-lg overflow-hidden bg-muted shrink-0 border cursor-pointer group"
+                            onClick={() =>
+                              handleOpenLightbox(
+                                prod.thumbnailUrl ||
+                                  "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80",
+                                prod.name
+                              )
                             }
-                            alt={prod.name}
-                            fill
-                            className="object-cover group-hover:scale-110 transition-transform"
-                          />
-                          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
-                            <Maximize2 className="h-3 w-3" />
+                            title="Click để phóng to ảnh"
+                          >
+                            <Image
+                              src={
+                                prod.thumbnailUrl ||
+                                "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100&auto=format&fit=crop&q=80"
+                              }
+                              alt={prod.name}
+                              fill
+                              className="object-cover group-hover:scale-110 transition-transform"
+                            />
+                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity text-white">
+                              <Maximize2 className="h-3 w-3" />
+                            </div>
+                          </div>
+                          <div className="min-w-0 max-w-xs">
+                            <p className="font-semibold text-xs text-foreground truncate">
+                              {prod.name}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground truncate">
+                              {prod.brandName ? `Hãng: ${prod.brandName}` : "Chính hãng"}
+                            </p>
                           </div>
                         </div>
-                        <div className="min-w-0 max-w-xs">
-                          <p className="font-semibold text-xs text-foreground truncate">
-                            {prod.name}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground truncate">
-                            {prod.brandName ? `Hãng: ${prod.brandName}` : "Chính hãng"}
-                          </p>
-                        </div>
+                      </TableCell>
+
+                      <TableCell className="font-mono text-xs font-semibold text-foreground">
+                        {prod.sku}
+                      </TableCell>
+
+                      <TableCell className="text-xs text-muted-foreground">
+                        {prod.categoryName || "Chung"}
+                      </TableCell>
+
+                      <TableCell className="font-bold text-xs text-foreground">
+                        {formatCurrency(prod.price)}
+                      </TableCell>
+
+                      <TableCell>
+                        <span
+                          className={`font-bold text-xs inline-flex items-center gap-1 ${
+                            prod.stockQuantity <= 10 ? "text-rose-600" : "text-foreground"
+                          }`}
+                        >
+                          {prod.stockQuantity <= 10 && (
+                            <AlertTriangle className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+                          )}
+                          <span>{prod.stockQuantity} món</span>
+                        </span>
+                      </TableCell>
+
+                      <TableCell>
+                        <button
+                          onClick={() => handleToggleStatus(prod)}
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border transition-colors ${
+                            prod.active
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-300"
+                              : "bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
+                          }`}
+                          title="Bấm để bật/tắt trạng thái"
+                        >
+                          {prod.active ? (
+                            <>
+                              <CheckCircle className="h-3 w-3 text-emerald-600" />
+                              <span>Đang bán</span>
+                            </>
+                          ) : (
+                            <>
+                              <EyeOff className="h-3 w-3 text-slate-500" />
+                              <span>Tạm dừng</span>
+                            </>
+                          )}
+                        </button>
+                      </TableCell>
+
+                      <TableCell className="text-right whitespace-nowrap space-x-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs px-2 rounded-lg text-indigo-600 hover:text-indigo-700"
+                          onClick={() => handleOpenEditModal(prod)}
+                          title="Chỉnh sửa sản phẩm"
+                        >
+                          <Edit className="h-3.5 w-3.5 mr-1" />
+                          Sửa
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs px-2 rounded-lg text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                          onClick={() => handleDeleteProduct(prod)}
+                          title="Vô hiệu hóa sản phẩm"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* 2. MOBILE VIEW: TOUCH-OPTIMIZED PRODUCT CARDS (Shown on < md) */}
+          <div className="md:hidden divide-y divide-border">
+            {loading ? (
+              <div className="p-6 text-center text-xs text-muted-foreground space-y-2">
+                <RefreshCw className="h-5 w-5 animate-spin mx-auto text-indigo-600" />
+                <span>Đang tải danh sách sản phẩm...</span>
+              </div>
+            ) : productsData.items.length === 0 ? (
+              <div className="text-center py-12 text-xs text-muted-foreground">
+                Không tìm thấy sản phẩm nào phù hợp.
+              </div>
+            ) : (
+              productsData.items.map((prod) => (
+                <div key={prod.id} className="p-3.5 space-y-2.5">
+                  <div className="flex items-start gap-3">
+                    {/* Thumbnail */}
+                    <div
+                      className="h-14 w-14 relative rounded-xl overflow-hidden bg-muted shrink-0 border cursor-pointer"
+                      onClick={() =>
+                        handleOpenLightbox(
+                          prod.thumbnailUrl ||
+                            "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80",
+                          prod.name
+                        )
+                      }
+                    >
+                      <Image
+                        src={
+                          prod.thumbnailUrl ||
+                          "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=120&auto=format&fit=crop&q=80"
+                        }
+                        alt={prod.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+
+                    {/* Info */}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-mono text-[10px] font-bold text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                          {prod.sku}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">
+                          {prod.categoryName || "Chung"}
+                        </span>
                       </div>
-                    </TableCell>
+                      <p className="font-bold text-xs text-foreground truncate mt-0.5">
+                        {prod.name}
+                      </p>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="font-extrabold text-xs text-indigo-600 dark:text-indigo-400">
+                          {formatCurrency(prod.price)}
+                        </span>
+                        <span
+                          className={`font-bold text-[11px] inline-flex items-center gap-1 ${
+                            prod.stockQuantity <= 10 ? "text-rose-600" : "text-muted-foreground"
+                          }`}
+                        >
+                          {prod.stockQuantity <= 10 && (
+                            <AlertTriangle className="h-3 w-3 text-rose-500 shrink-0" />
+                          )}
+                          <span>Kho: {prod.stockQuantity}</span>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
 
-                    <TableCell className="font-mono text-xs font-semibold text-foreground">
-                      {prod.sku}
-                    </TableCell>
+                  {/* Actions Bar */}
+                  <div className="flex items-center justify-between pt-2 border-t gap-2">
+                    <button
+                      onClick={() => handleToggleStatus(prod)}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-colors ${
+                        prod.active
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/20 dark:text-emerald-300"
+                          : "bg-slate-100 text-slate-600 border-slate-300 dark:bg-slate-800 dark:text-slate-300"
+                      }`}
+                    >
+                      {prod.active ? (
+                        <>
+                          <CheckCircle className="h-3 w-3 text-emerald-600" />
+                          <span>Đang bán</span>
+                        </>
+                      ) : (
+                        <>
+                          <EyeOff className="h-3 w-3 text-slate-500" />
+                          <span>Tạm dừng</span>
+                        </>
+                      )}
+                    </button>
 
-                    <TableCell className="text-xs text-muted-foreground">
-                      {prod.categoryName || "Chung"}
-                    </TableCell>
-
-                    <TableCell className="font-bold text-xs text-foreground">
-                      {formatCurrency(prod.price)}
-                    </TableCell>
-
-                    <TableCell>
-                      <span
-                        className={`font-bold text-xs inline-flex items-center gap-1 ${
-                          prod.stockQuantity <= 10 ? "text-rose-600" : "text-foreground"
-                        }`}
-                      >
-                        {prod.stockQuantity <= 10 && (
-                          <AlertTriangle className="h-3.5 w-3.5 text-rose-500 shrink-0" />
-                        )}
-                        <span>{prod.stockQuantity} món</span>
-                      </span>
-                    </TableCell>
-
-                    <TableCell>
-                      <button
-                        onClick={() => handleToggleStatus(prod)}
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border transition-colors ${
-                          prod.active
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-300"
-                            : "bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300"
-                        }`}
-                        title="Bấm để bật/tắt trạng thái"
-                      >
-                        {prod.active ? (
-                          <>
-                            <CheckCircle className="h-3 w-3 text-emerald-600" />
-                            <span>Đang bán</span>
-                          </>
-                        ) : (
-                          <>
-                            <EyeOff className="h-3 w-3 text-slate-500" />
-                            <span>Tạm dừng</span>
-                          </>
-                        )}
-                      </button>
-                    </TableCell>
-
-                    <TableCell className="text-right whitespace-nowrap space-x-1.5">
+                    <div className="flex items-center space-x-1.5">
                       <Button
                         size="sm"
                         variant="outline"
-                        className="h-7 text-xs px-2 rounded-lg text-indigo-600 hover:text-indigo-700"
+                        className="h-7 text-xs px-2.5 rounded-lg text-indigo-600"
                         onClick={() => handleOpenEditModal(prod)}
-                        title="Chỉnh sửa sản phẩm"
                       >
                         <Edit className="h-3.5 w-3.5 mr-1" />
                         Sửa
                       </Button>
-
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-7 text-xs px-2 rounded-lg text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                        className="h-7 w-7 p-0 rounded-lg text-rose-600 hover:bg-rose-50"
                         onClick={() => handleDeleteProduct(prod)}
-                        title="Vô hiệu hóa sản phẩm"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
 
           {/* PHÂN TRANG */}
           {productsData.totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t">
-              <span className="text-xs text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t">
+              <span className="text-xs text-muted-foreground text-center sm:text-left">
                 Trang {productsData.pageNo + 1} / {productsData.totalPages} ({productsData.totalElements} sản phẩm)
               </span>
               <div className="flex items-center space-x-2">

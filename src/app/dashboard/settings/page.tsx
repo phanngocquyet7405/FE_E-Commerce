@@ -122,7 +122,7 @@ export default function AdminSettingsPage() {
     <div className="space-y-6 max-w-5xl">
       {/* HEADER */}
       <div>
-        <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
+        <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
           <span>Cấu Hình Hệ Thống & Tài Khoản Quản Trị</span>
         </h1>
         <p className="text-xs text-muted-foreground mt-0.5">

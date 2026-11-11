@@ -2,12 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminMobileBottomNav } from "@/components/admin/AdminMobileBottomNav";
 import { CommandPalette } from "@/components/admin/CommandPalette";
 import { ThemeToggle } from "@/components/admin/ThemeToggle";
 import authService from "@/services/authService";
-import { Bell, ShieldCheck, Search, ArrowRight } from "lucide-react";
+import { Bell, ShieldCheck, Search, ArrowRight, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function DashboardLayout({
@@ -16,9 +17,16 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
   const [adminEmail, setAdminEmail] = useState<string>("");
   const [showFallbackAction, setShowFallbackAction] = useState<boolean>(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
+
+  // Tự động đóng drawer menu khi chuyển trang
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -75,13 +83,39 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen flex bg-muted/20">
-      <AdminSidebar />
+      {/* SIDEBAR: Sticky trên Desktop & Drawer trượt trên Mobile/Tablet */}
+      <AdminSidebar
+        mobileOpen={mobileMenuOpen}
+        onMobileClose={() => setMobileMenuOpen(false)}
+      />
       <CommandPalette />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        <header className="h-16 border-b bg-background flex items-center justify-between px-6 sticky top-0 z-30 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80">
-          {/* SEARCH COMMAND PALETTE TRIGGER BUTTON */}
-          <div className="flex items-center space-x-3">
+        {/* HEADER QUẢN TRỊ VIÊN */}
+        <header className="h-16 border-b bg-background flex items-center justify-between px-3 sm:px-6 sticky top-0 z-30 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Nút mở Menu trên Mobile/Tablet */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden h-9 w-9 rounded-xl text-foreground hover:bg-muted shrink-0"
+              aria-label="Mở menu quản trị"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+
+            {/* Logo thu nhỏ trên Mobile */}
+            <div className="flex items-center gap-2 lg:hidden">
+              <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white font-bold shadow-sm shrink-0">
+                <ShieldCheck className="h-4 w-4" />
+              </div>
+              <span className="font-extrabold text-sm text-foreground truncate max-w-[100px] sm:max-w-none">
+                ShopDev
+              </span>
+            </div>
+
+            {/* Nút kích hoạt Command Palette tìm kiếm */}
             <button
               onClick={() => {
                 const event = new KeyboardEvent("keydown", {
@@ -90,18 +124,19 @@ export default function DashboardLayout({
                 });
                 window.dispatchEvent(event);
               }}
-              className="flex items-center space-x-2.5 px-3 py-1.5 rounded-xl border border-input bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground text-xs transition-colors"
+              className="flex items-center space-x-2 px-2.5 sm:px-3 py-1.5 rounded-xl border border-input bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground text-xs transition-colors shrink-0"
+              title="Tìm kiếm nhanh (Ctrl K)"
             >
               <Search className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Tìm kiếm nhanh lệnh & dữ liệu...</span>
-              <kbd className="hidden sm:inline-flex h-4 items-center gap-0.5 rounded border bg-background px-1.5 font-mono text-[9px] text-muted-foreground">
+              <kbd className="hidden md:inline-flex h-4 items-center gap-0.5 rounded border bg-background px-1.5 font-mono text-[9px] text-muted-foreground">
                 Ctrl K
               </kbd>
             </button>
           </div>
 
           {/* HEADER RIGHT ACTIONS */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5 sm:space-x-2">
             <ThemeToggle />
 
             <Link href="/dashboard/orders">
@@ -118,9 +153,9 @@ export default function DashboardLayout({
 
             <Link
               href="/dashboard/settings"
-              className="flex items-center space-x-2.5 pl-3 border-l hover:opacity-80 transition-opacity"
+              className="flex items-center space-x-2 sm:space-x-2.5 pl-2 sm:pl-3 border-l hover:opacity-80 transition-opacity"
             >
-              <div className="h-8 w-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+              <div className="h-8 w-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm shrink-0">
                 {adminEmail ? adminEmail[0].toUpperCase() : "A"}
               </div>
               <div className="hidden md:block text-left">
@@ -135,8 +170,14 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <main className="p-4 sm:p-6 md:p-8 flex-1">{children}</main>
+        {/* NỘI DUNG CHÍNH (Thêm padding-bottom trên mobile để không bị che bởi Bottom Nav) */}
+        <main className="p-3 sm:p-5 md:p-8 flex-1 pb-24 lg:pb-8">
+          {children}
+        </main>
       </div>
+
+      {/* THANH ĐIỀU HƯỚNG DƯỚI ĐÁY CHO MOBILE & TABLET */}
+      <AdminMobileBottomNav onOpenMenu={() => setMobileMenuOpen(true)} />
     </div>
   );
 }
