@@ -115,9 +115,15 @@ export default function AdminCategoriesBrandsPage() {
       }
       setCatModalOpen(false);
       fetchData();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Lỗi lưu danh mục:", err);
-      toastError("Lỗi", "Không thể lưu danh mục.");
+      const serverMsg =
+        err?.response?.data?.message ||
+        (err?.response?.data?.fieldErrors
+          ? Object.values(err.response.data.fieldErrors).join(", ")
+          : null) ||
+        "Không thể lưu danh mục.";
+      toastError("Lỗi", serverMsg);
     } finally {
       setSubmitting(false);
     }
@@ -129,9 +135,10 @@ export default function AdminCategoriesBrandsPage() {
       await adminCategoryApi.deleteCategory(cat.id);
       success("Đã xóa", `Danh mục "${cat.name}" đã được xóa.`);
       fetchData();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Lỗi xóa danh mục:", err);
-      toastError("Lỗi", "Không thể xóa danh mục.");
+      const serverMsg = err?.response?.data?.message || "Không thể xóa danh mục.";
+      toastError("Lỗi", serverMsg);
     }
   };
 
@@ -191,9 +198,15 @@ export default function AdminCategoriesBrandsPage() {
       }
       setBrandModalOpen(false);
       fetchData();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Lỗi lưu thương hiệu:", err);
-      toastError("Lỗi", "Không thể lưu thương hiệu.");
+      const serverMsg =
+        err?.response?.data?.message ||
+        (err?.response?.data?.fieldErrors
+          ? Object.values(err.response.data.fieldErrors).join(", ")
+          : null) ||
+        "Không thể lưu thương hiệu.";
+      toastError("Lỗi", serverMsg);
     } finally {
       setSubmitting(false);
     }
@@ -205,9 +218,10 @@ export default function AdminCategoriesBrandsPage() {
       await adminBrandApi.deleteBrand(brand.id);
       success("Đã xóa", `Thương hiệu "${brand.name}" đã được xóa.`);
       fetchData();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Lỗi xóa thương hiệu:", err);
-      toastError("Lỗi", "Không thể xóa thương hiệu.");
+      const serverMsg = err?.response?.data?.message || "Không thể xóa thương hiệu.";
+      toastError("Lỗi", serverMsg);
     }
   };
 

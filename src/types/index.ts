@@ -131,6 +131,7 @@ export interface Category {
 
 export interface CategoryRequest {
   name: string;
+  slug?: string;
   description?: string;
 }
 
@@ -146,6 +147,7 @@ export interface Brand {
 
 export interface BrandRequest {
   name: string;
+  slug?: string;
   description?: string;
   logoUrl?: string;
 }
