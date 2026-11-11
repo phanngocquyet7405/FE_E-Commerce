@@ -80,7 +80,7 @@ export function getAuthUserFromToken(token: string | null | undefined): {
   email: string;
   role: "ADMIN" | "CUSTOMER";
 } | null {
-  if (!token || isTokenExpired(token)) return null;
+  if (!token) return null;
 
   const payload = decodeToken(token);
   if (!payload) return null;

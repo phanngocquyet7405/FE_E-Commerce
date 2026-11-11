@@ -40,6 +40,9 @@ function LoginForm() {
 
   // Hiển thị thông báo nếu bị điều hướng từ bảo vệ route
   useEffect(() => {
+    // Dọn dẹp token cũ còn lưu trong trình duyệt để tránh gửi token hết hạn
+    authService.clearSession();
+
     if (errorParam === "session_expired") {
       setErrorMessage("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để tiếp tục.");
     } else if (errorParam === "unauthorized_admin") {
@@ -61,6 +64,9 @@ function LoginForm() {
     setIsLoading(true);
 
     try {
+      // Đảm bảo không còn token cũ trong LocalStorage trước khi gửi request đăng nhập
+      authService.clearSession();
+
       const result = await authService.login({
         email: email.trim(),
         password: password.trim(),

@@ -32,7 +32,10 @@ export const authService = {
     const tokens = res.data;
 
     if (typeof window !== "undefined") {
+      // Lưu trữ đồng thời cả hai chuẩn đặt tên để tương thích toàn diện
+      localStorage.setItem("accessToken", tokens.accessToken);
       localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
+      localStorage.setItem("refreshToken", tokens.refreshToken);
       localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
 
       const authInfo = getAuthUserFromToken(tokens.accessToken);
@@ -67,7 +70,9 @@ export const authService = {
    */
   clearSession(): void {
     if (typeof window !== "undefined") {
+      localStorage.removeItem("accessToken");
       localStorage.removeItem(ACCESS_TOKEN_KEY);
+      localStorage.removeItem("refreshToken");
       localStorage.removeItem(REFRESH_TOKEN_KEY);
       localStorage.removeItem(USER_INFO_KEY);
 
@@ -81,7 +86,7 @@ export const authService = {
    */
   async logout(redirect: boolean = true): Promise<void> {
     if (typeof window !== "undefined") {
-      const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+      const refreshToken = this.getRefreshToken();
       if (refreshToken) {
         try {
           await authApi.logout(refreshToken);
@@ -103,7 +108,7 @@ export const authService = {
    */
   getAccessToken(): string | null {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem(ACCESS_TOKEN_KEY);
+    return localStorage.getItem("accessToken") || localStorage.getItem(ACCESS_TOKEN_KEY);
   },
 
   /**
@@ -111,16 +116,26 @@ export const authService = {
    */
   getRefreshToken(): string | null {
     if (typeof window === "undefined") return null;
-    return localStorage.getItem(REFRESH_TOKEN_KEY);
+    return localStorage.getItem("refreshToken") || localStorage.getItem(REFRESH_TOKEN_KEY);
   },
 
   /**
-   * Kiểm tra người dùng đã xác thực và token còn hạn hay không
+   * Kiểm tra người dùng đã xác thực và phiên làm việc còn hiệu lực hay không.
+   * Nếu Access Token đã hết hạn (1 giờ) nhưng Refresh Token vẫn còn hạn (7 ngày),
+   * vẫn coi là đã xác thực để Axios Interceptor tự động refresh token trong lần gọi API đầu tiên.
    */
   isAuthenticated(): boolean {
     const token = this.getAccessToken();
-    if (!token) return false;
-    return !isTokenExpired(token);
+    const refreshToken = this.getRefreshToken();
+    if (!token && !refreshToken) return false;
+
+    // Nếu Access Token còn hiệu lực -> đã xác thực
+    if (token && !isTokenExpired(token)) return true;
+
+    // Nếu Access Token đã hết hạn nhưng Refresh Token còn hạn -> phiên vẫn duy trì
+    if (refreshToken && !isTokenExpired(refreshToken)) return true;
+
+    return false;
   },
 
   /**
@@ -128,17 +143,33 @@ export const authService = {
    */
   getCurrentRole(): "ADMIN" | "CUSTOMER" | null {
     const token = this.getAccessToken();
-    if (!token || isTokenExpired(token)) return null;
-    return getUserRole(token);
+    if (token) {
+      return getUserRole(token);
+    }
+    const user = this.getCurrentUser();
+    return user?.role || null;
   },
 
   /**
-   * Kiểm tra nghiêm ngặt xem người dùng hiện tại có quyền Quản trị viên (ROLE_ADMIN) hay không
+   * Kiểm tra nghiêm ngặt xem người dùng hiện tại có quyền Quản trị viên (ROLE_ADMIN) hay không.
+   * Vẫn duy trì quyền nếu Access Token hết hạn nhưng Refresh Token còn hạn để silent refresh hoạt động.
    */
   isAdmin(): boolean {
     const token = this.getAccessToken();
-    if (!token || isTokenExpired(token)) return false;
-    return isAdminUser(token);
+    if (token && !isTokenExpired(token)) {
+      return isAdminUser(token);
+    }
+
+    const refreshToken = this.getRefreshToken();
+    if (refreshToken && !isTokenExpired(refreshToken)) {
+      if (token) {
+        return isAdminUser(token);
+      }
+      const user = this.getCurrentUser();
+      return user?.role === "ADMIN";
+    }
+
+    return false;
   },
 
   /**
