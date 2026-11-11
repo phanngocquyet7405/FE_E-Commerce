@@ -208,7 +208,7 @@ export default function AdminPaymentsPage() {
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
             <span>Đối Soát Giao Dịch VietQR SePay</span>
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">
               Webhook Active
@@ -219,14 +219,14 @@ export default function AdminPaymentsPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           {/* Nút bật tắt Live Auto-refresh */}
           <button
             onClick={() => {
               setAutoRefresh(!autoRefresh);
               setCountdown(30);
             }}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-all ${
+            className={`flex-1 sm:flex-none px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition-all ${
               autoRefresh
                 ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
                 : "bg-card text-muted-foreground border-border hover:bg-muted hover:text-foreground"
@@ -241,7 +241,7 @@ export default function AdminPaymentsPage() {
             variant="outline"
             size="sm"
             onClick={handleExportCsv}
-            className="border-input hover:bg-muted font-semibold text-xs flex items-center gap-1.5 h-9 rounded-xl"
+            className="flex-1 sm:flex-none border-input hover:bg-muted font-semibold text-xs flex items-center justify-center gap-1.5 h-9 rounded-xl"
             title="Tải sổ cái giao dịch SePay về máy"
           >
             <Download className="h-3.5 w-3.5" />
@@ -253,7 +253,7 @@ export default function AdminPaymentsPage() {
             size="sm"
             onClick={() => fetchTransactions()}
             disabled={loading}
-            className="border-input hover:bg-muted font-semibold text-xs flex items-center gap-1.5 h-9 rounded-xl"
+            className="flex-1 sm:flex-none border-input hover:bg-muted font-semibold text-xs flex items-center justify-center gap-1.5 h-9 rounded-xl"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
             <span>Làm mới</span>
@@ -289,104 +289,177 @@ export default function AdminPaymentsPage() {
         ))}
       </div>
 
-      {/* TABLE GIAO DỊCH */}
+      {/* TABLE & CARDS GIAO DỊCH */}
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Mã GD SePay</TableHead>
-                <TableHead>Ngân Hàng / STK</TableHead>
-                <TableHead>Số Tiền Vào</TableHead>
-                <TableHead>Nội Dung Chuyển Khoản</TableHead>
-                <TableHead>Đơn Hàng Gán</TableHead>
-                <TableHead>Trạng Thái</TableHead>
-                <TableHead>Thời Gian</TableHead>
-                <TableHead className="text-right">Đối Soát</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableSkeletonRows rows={5} cols={8} />
-              ) : transactionsData.items.length === 0 ? (
+          {/* 1. DESKTOP VIEW: DATA TABLE (Hidden on mobile < md) */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-12 text-xs text-muted-foreground">
-                    Không có giao dịch nào phù hợp với bộ lọc.
-                  </TableCell>
+                  <TableHead>Mã GD SePay</TableHead>
+                  <TableHead>Ngân Hàng / STK</TableHead>
+                  <TableHead>Số Tiền Vào</TableHead>
+                  <TableHead>Nội Dung Chuyển Khoản</TableHead>
+                  <TableHead>Đơn Hàng Gán</TableHead>
+                  <TableHead>Trạng Thái</TableHead>
+                  <TableHead>Thời Gian</TableHead>
+                  <TableHead className="text-right">Đối Soát</TableHead>
                 </TableRow>
-              ) : (
-                transactionsData.items.map((tx) => {
-                  const statusInfo = formatTxStatus(tx.status);
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableSkeletonRows rows={5} cols={8} />
+                ) : transactionsData.items.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-12 text-xs text-muted-foreground">
+                      Không có giao dịch nào phù hợp với bộ lọc.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  transactionsData.items.map((tx) => {
+                    const statusInfo = formatTxStatus(tx.status);
 
-                  return (
-                    <TableRow key={tx.id} className="hover:bg-muted/40 transition-colors">
-                      <TableCell className="font-mono text-xs font-bold text-foreground">
-                        #{tx.sepayId || tx.id.slice(-8)}
-                      </TableCell>
+                    return (
+                      <TableRow key={tx.id} className="hover:bg-muted/40 transition-colors">
+                        <TableCell className="font-mono text-xs font-bold text-foreground">
+                          #{tx.sepayId || tx.id.slice(-8)}
+                        </TableCell>
 
-                      <TableCell>
-                        <div className="flex items-center space-x-1.5 font-medium text-xs text-foreground">
-                          <Building className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                          <span>{tx.gateway || "MBBank"}</span>
-                        </div>
-                        <div className="font-mono text-[11px] text-muted-foreground">
-                          {tx.accountNumber || "—"}
-                        </div>
-                      </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-1.5 font-medium text-xs text-foreground">
+                            <Building className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            <span>{tx.gateway || "MBBank"}</span>
+                          </div>
+                          <div className="font-mono text-[11px] text-muted-foreground">
+                            {tx.accountNumber || "—"}
+                          </div>
+                        </TableCell>
 
-                      <TableCell className="font-bold text-xs text-emerald-600 whitespace-nowrap">
-                        +{formatCurrency(tx.amountIn || 0)}
-                      </TableCell>
+                        <TableCell className="font-bold text-xs text-emerald-600 whitespace-nowrap">
+                          +{formatCurrency(tx.amountIn || 0)}
+                        </TableCell>
 
-                      <TableCell className="text-xs text-foreground max-w-xs truncate" title={tx.content}>
-                        <span className="font-mono bg-muted/60 px-1.5 py-0.5 rounded text-[11px]">
+                        <TableCell className="text-xs text-foreground max-w-xs truncate" title={tx.content}>
+                          <span className="font-mono bg-muted/60 px-1.5 py-0.5 rounded text-[11px]">
+                            {tx.content || "—"}
+                          </span>
+                        </TableCell>
+
+                        <TableCell className="font-mono text-xs font-semibold text-indigo-600">
+                          {tx.orderCode ? (
+                            <span>{tx.orderCode}</span>
+                          ) : tx.orderId ? (
+                            <span className="truncate max-w-[100px] inline-block">{tx.orderId}</span>
+                          ) : (
+                            <span className="text-muted-foreground italic text-[11px]">Chưa gắn đơn</span>
+                          )}
+                        </TableCell>
+
+                        <TableCell>
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${statusInfo.badge}`}
+                          >
+                            {statusInfo.label}
+                          </span>
+                        </TableCell>
+
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                          {formatDate(tx.createdAt || tx.transactionDate || new Date().toISOString())}
+                        </TableCell>
+
+                        <TableCell className="text-right whitespace-nowrap">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs px-2.5 rounded-lg text-indigo-600 hover:text-indigo-700"
+                            onClick={() => handleOpenProcessModal(tx)}
+                          >
+                            Xử lý
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* 2. MOBILE VIEW: TOUCH-OPTIMIZED TRANSACTION CARDS (Shown on < md) */}
+          <div className="md:hidden divide-y divide-border">
+            {loading ? (
+              <div className="p-6 text-center text-xs text-muted-foreground space-y-2">
+                <RefreshCw className="h-5 w-5 animate-spin mx-auto text-indigo-600" />
+                <span>Đang tải sổ cái giao dịch...</span>
+              </div>
+            ) : transactionsData.items.length === 0 ? (
+              <div className="text-center py-12 text-xs text-muted-foreground">
+                Không có giao dịch nào phù hợp với bộ lọc.
+              </div>
+            ) : (
+              transactionsData.items.map((tx) => {
+                const statusInfo = formatTxStatus(tx.status);
+
+                return (
+                  <div key={tx.id} className="p-3.5 space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center space-x-1.5">
+                        <Building className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span className="text-xs font-bold text-foreground">
+                          {tx.gateway || "MBBank"}
+                        </span>
+                        <span className="text-[11px] font-mono text-muted-foreground">
+                          {tx.accountNumber ? `(${tx.accountNumber})` : ""}
+                        </span>
+                      </div>
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusInfo.badge}`}
+                      >
+                        {statusInfo.label}
+                      </span>
+                    </div>
+
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="font-mono text-xs font-semibold text-muted-foreground truncate">
+                          GD #{tx.sepayId || tx.id.slice(-8)}
+                        </p>
+                        <p className="font-mono text-xs text-foreground bg-muted/60 px-2 py-1 rounded-lg mt-1 break-all">
                           {tx.content || "—"}
+                        </p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="font-extrabold text-sm text-emerald-600">
+                          +{formatCurrency(tx.amountIn || 0)}
+                        </p>
+                        <span className="text-[10px] font-mono text-indigo-600 block mt-0.5">
+                          {tx.orderCode ? `#${tx.orderCode}` : "Chưa gắn đơn"}
                         </span>
-                      </TableCell>
+                      </div>
+                    </div>
 
-                      <TableCell className="font-mono text-xs font-semibold text-indigo-600">
-                        {tx.orderCode ? (
-                          <span>{tx.orderCode}</span>
-                        ) : tx.orderId ? (
-                          <span className="truncate max-w-[100px] inline-block">{tx.orderId}</span>
-                        ) : (
-                          <span className="text-muted-foreground italic text-[11px]">Chưa gắn đơn</span>
-                        )}
-                      </TableCell>
-
-                      <TableCell>
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${statusInfo.badge}`}
-                        >
-                          {statusInfo.label}
-                        </span>
-                      </TableCell>
-
-                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatDate(tx.createdAt || tx.transactionDate || new Date().toISOString())}
-                      </TableCell>
-
-                      <TableCell className="text-right whitespace-nowrap">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs px-2.5 rounded-lg text-indigo-600 hover:text-indigo-700"
-                          onClick={() => handleOpenProcessModal(tx)}
-                        >
-                          Xử lý
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+                    <div className="flex items-center justify-between pt-1.5 border-t text-[11px] text-muted-foreground">
+                      <span>{formatDate(tx.createdAt || tx.transactionDate || new Date().toISOString())}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs px-3 rounded-lg text-indigo-600"
+                        onClick={() => handleOpenProcessModal(tx)}
+                      >
+                        Đối soát
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
 
           {/* PHÂN TRANG */}
           {transactionsData.totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t">
-              <span className="text-xs text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t">
+              <span className="text-xs text-muted-foreground text-center sm:text-left">
                 Trang {transactionsData.pageNo + 1} / {transactionsData.totalPages} ({transactionsData.totalElements} giao dịch)
               </span>
               <div className="flex items-center space-x-2">

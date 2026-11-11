@@ -235,126 +235,231 @@ export default function AdminUsersPage() {
       {/* BẢNG NGƯỜI DÙNG */}
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Họ & Tên</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Số Điện Thoại</TableHead>
-                <TableHead>Vai Trò (Role)</TableHead>
-                <TableHead>Trạng Thái</TableHead>
-                <TableHead>Ngày Đăng Ký</TableHead>
-                <TableHead className="text-right">Hành Động</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableSkeletonRows rows={5} cols={7} />
-              ) : usersData.items.length === 0 ? (
+          {/* 1. DESKTOP VIEW: DATA TABLE (Hidden on mobile < md) */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12 text-xs text-muted-foreground">
-                    Không tìm thấy người dùng nào phù hợp.
-                  </TableCell>
+                  <TableHead>Họ & Tên</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Số Điện Thoại</TableHead>
+                  <TableHead>Vai Trò (Role)</TableHead>
+                  <TableHead>Trạng Thái</TableHead>
+                  <TableHead>Ngày Đăng Ký</TableHead>
+                  <TableHead className="text-right">Hành Động</TableHead>
                 </TableRow>
-              ) : (
-                usersData.items.map((user) => {
-                  const isAdmin =
-                    user.roles?.includes("ROLE_ADMIN") ||
-                    user.roles?.includes("ADMIN");
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableSkeletonRows rows={5} cols={7} />
+                ) : usersData.items.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-12 text-xs text-muted-foreground">
+                      Không tìm thấy người dùng nào phù hợp.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  usersData.items.map((user) => {
+                    const isAdmin =
+                      user.roles?.includes("ROLE_ADMIN") ||
+                      user.roles?.includes("ADMIN");
 
-                  return (
-                    <TableRow key={user.id} className="hover:bg-muted/40 transition-colors">
-                      {/* Name with Avatar initials */}
-                      <TableCell>
-                        <div className="flex items-center space-x-2.5">
-                          <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm">
-                            {user.fullName ? user.fullName[0].toUpperCase() : "U"}
+                    return (
+                      <TableRow key={user.id} className="hover:bg-muted/40 transition-colors">
+                        {/* Name with Avatar initials */}
+                        <TableCell>
+                          <div className="flex items-center space-x-2.5">
+                            <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm">
+                              {user.fullName ? user.fullName[0].toUpperCase() : "U"}
+                            </div>
+                            <div>
+                              <p className="font-semibold text-xs text-foreground">
+                                {user.fullName || "Chưa đặt tên"}
+                              </p>
+                              {user.emailVerified && (
+                                <span className="text-[10px] text-emerald-600 flex items-center gap-0.5">
+                                  <CheckCircle2 className="h-3 w-3" /> Email đã xác thực
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-semibold text-xs text-foreground">
-                              {user.fullName || "Chưa đặt tên"}
-                            </p>
-                            {user.emailVerified && (
-                              <span className="text-[10px] text-emerald-600 flex items-center gap-0.5">
-                                <CheckCircle2 className="h-3 w-3" /> Email đã xác thực
-                              </span>
+                        </TableCell>
+
+                        <TableCell className="font-mono text-xs text-foreground">
+                          {user.email}
+                        </TableCell>
+
+                        <TableCell className="font-mono text-xs text-muted-foreground">
+                          {user.phone || "—"}
+                        </TableCell>
+
+                        {/* Roles */}
+                        <TableCell>
+                          <Badge
+                            variant={isAdmin ? "default" : "secondary"}
+                            className={`text-[10px] font-mono ${
+                              isAdmin
+                                ? "bg-indigo-600 text-white"
+                                : "bg-slate-100 text-slate-700"
+                            }`}
+                          >
+                            {isAdmin ? "ROLE_ADMIN" : "ROLE_CUSTOMER"}
+                          </Badge>
+                        </TableCell>
+
+                        {/* Status */}
+                        <TableCell>
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
+                              user.active
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                : "bg-rose-50 text-rose-700 border-rose-200"
+                            }`}
+                          >
+                            {user.active ? (
+                              <>
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                                <span>Hoạt động</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
+                                <span>Đã khóa</span>
+                              </>
                             )}
-                          </div>
+                          </span>
+                        </TableCell>
+
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                          {formatDate(user.createdAt)}
+                        </TableCell>
+
+                        {/* Actions */}
+                        <TableCell className="text-right whitespace-nowrap space-x-1.5">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs px-2 rounded-lg text-indigo-600"
+                            onClick={() => handleOpenRoleModal(user)}
+                            title="Cấp quyền"
+                          >
+                            <ShieldCheck className="h-3.5 w-3.5 mr-1" />
+                            Phân quyền
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className={`h-7 text-xs px-2 rounded-lg ${
+                              user.active
+                                ? "text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                                : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                            }`}
+                            onClick={() => handleToggleStatus(user)}
+                            title={user.active ? "Khóa tài khoản" : "Mở khóa tài khoản"}
+                          >
+                            {user.active ? (
+                              <>
+                                <Lock className="h-3.5 w-3.5 mr-1" />
+                                Khóa
+                              </>
+                            ) : (
+                              <>
+                                <Unlock className="h-3.5 w-3.5 mr-1" />
+                                Mở khóa
+                              </>
+                            )}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* 2. MOBILE VIEW: TOUCH-OPTIMIZED CUSTOMER CARDS (Shown on < md) */}
+          <div className="md:hidden divide-y divide-border">
+            {loading ? (
+              <div className="p-6 text-center text-xs text-muted-foreground space-y-2">
+                <RefreshCw className="h-5 w-5 animate-spin mx-auto text-indigo-600" />
+                <span>Đang tải danh sách người dùng...</span>
+              </div>
+            ) : usersData.items.length === 0 ? (
+              <div className="text-center py-12 text-xs text-muted-foreground">
+                Không tìm thấy người dùng nào phù hợp.
+              </div>
+            ) : (
+              usersData.items.map((user) => {
+                const isAdmin =
+                  user.roles?.includes("ROLE_ADMIN") ||
+                  user.roles?.includes("ADMIN");
+
+                return (
+                  <div key={user.id} className="p-3.5 space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center space-x-2.5 min-w-0">
+                        <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-sm">
+                          {user.fullName ? user.fullName[0].toUpperCase() : "U"}
                         </div>
-                      </TableCell>
+                        <div className="min-w-0">
+                          <p className="font-bold text-xs text-foreground truncate">
+                            {user.fullName || "Chưa đặt tên"}
+                          </p>
+                          <p className="font-mono text-[11px] text-muted-foreground truncate">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
 
-                      <TableCell className="font-mono text-xs text-foreground">
-                        {user.email}
-                      </TableCell>
+                      <Badge
+                        variant={isAdmin ? "default" : "secondary"}
+                        className={`text-[9px] font-mono shrink-0 ${
+                          isAdmin
+                            ? "bg-indigo-600 text-white"
+                            : "bg-slate-100 text-slate-700"
+                        }`}
+                      >
+                        {isAdmin ? "ADMIN" : "CUSTOMER"}
+                      </Badge>
+                    </div>
 
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        {user.phone || "—"}
-                      </TableCell>
+                    <div className="flex items-center justify-between text-xs pt-1 border-t text-muted-foreground">
+                      <span className="font-mono text-[11px]">{user.phone || "Chưa có SĐT"}</span>
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                          user.active
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : "bg-rose-50 text-rose-700 border-rose-200"
+                        }`}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${user.active ? "bg-emerald-500" : "bg-rose-500"}`} />
+                        <span>{user.active ? "Hoạt động" : "Bị khóa"}</span>
+                      </span>
+                    </div>
 
-                      {/* Roles */}
-                      <TableCell>
-                        <Badge
-                          variant={isAdmin ? "default" : "secondary"}
-                          className={`text-[10px] font-mono ${
-                            isAdmin
-                              ? "bg-indigo-600 text-white"
-                              : "bg-slate-100 text-slate-700"
-                          }`}
-                        >
-                          {isAdmin ? "ROLE_ADMIN" : "ROLE_CUSTOMER"}
-                        </Badge>
-                      </TableCell>
-
-                      {/* Status */}
-                      <TableCell>
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
-                            user.active
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              : "bg-rose-50 text-rose-700 border-rose-200"
-                          }`}
-                        >
-                          {user.active ? (
-                            <>
-                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                              <span>Hoạt động</span>
-                            </>
-                          ) : (
-                            <>
-                              <span className="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
-                              <span>Đã khóa</span>
-                            </>
-                          )}
-                        </span>
-                      </TableCell>
-
-                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatDate(user.createdAt)}
-                      </TableCell>
-
-                      {/* Actions */}
-                      <TableCell className="text-right whitespace-nowrap space-x-1.5">
+                    <div className="flex items-center justify-between pt-1 border-t text-[11px] text-muted-foreground">
+                      <span>{formatDate(user.createdAt)}</span>
+                      <div className="flex items-center space-x-1.5">
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-7 text-xs px-2 rounded-lg text-indigo-600"
+                          className="h-7 text-xs px-2.5 rounded-lg text-indigo-600"
                           onClick={() => handleOpenRoleModal(user)}
-                          title="Cấp quyền"
                         >
                           <ShieldCheck className="h-3.5 w-3.5 mr-1" />
-                          Phân quyền
+                          Quyền
                         </Button>
-
                         <Button
                           size="sm"
                           variant="ghost"
-                          className={`h-7 text-xs px-2 rounded-lg ${
+                          className={`h-7 text-xs px-2.5 rounded-lg ${
                             user.active
-                              ? "text-rose-600 hover:bg-rose-50 hover:text-rose-700"
-                              : "text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                              ? "text-rose-600 hover:bg-rose-50"
+                              : "text-emerald-600 hover:bg-emerald-50"
                           }`}
                           onClick={() => handleToggleStatus(user)}
-                          title={user.active ? "Khóa tài khoản" : "Mở khóa tài khoản"}
                         >
                           {user.active ? (
                             <>
@@ -364,22 +469,22 @@ export default function AdminUsersPage() {
                           ) : (
                             <>
                               <Unlock className="h-3.5 w-3.5 mr-1" />
-                              Mở khóa
+                              Mở
                             </>
                           )}
                         </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
 
           {/* PHÂN TRANG */}
           {usersData.totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t">
-              <span className="text-xs text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t">
+              <span className="text-xs text-muted-foreground text-center sm:text-left">
                 Trang {usersData.pageNo + 1} / {usersData.totalPages} ({usersData.totalElements} tài khoản)
               </span>
               <div className="flex items-center space-x-2">

@@ -272,7 +272,7 @@ export default function AdminOrdersPage() {
       {/* HEADER & NÚT HÀNH ĐỘNG */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground flex items-center gap-2">
             <span>Quản Lý Đơn Hàng</span>
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-200">
               {ordersData.totalElements} đơn
@@ -283,12 +283,12 @@ export default function AdminOrdersPage() {
           </p>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <Button
             variant="outline"
             size="sm"
             onClick={handleExportCsv}
-            className="border-input hover:bg-muted font-semibold text-xs flex items-center gap-1.5 h-9 rounded-xl"
+            className="flex-1 sm:flex-none border-input hover:bg-muted font-semibold text-xs flex items-center justify-center gap-1.5 h-9 rounded-xl"
             title="Tải danh sách đơn hàng về máy tính"
           >
             <Download className="h-3.5 w-3.5" />
@@ -300,7 +300,7 @@ export default function AdminOrdersPage() {
             size="sm"
             onClick={fetchOrders}
             disabled={loading}
-            className="border-input hover:bg-muted font-semibold text-xs flex items-center gap-1.5 h-9 rounded-xl"
+            className="flex-1 sm:flex-none border-input hover:bg-muted font-semibold text-xs flex items-center justify-center gap-1.5 h-9 rounded-xl"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
             <span>Làm mới</span>
@@ -309,7 +309,7 @@ export default function AdminOrdersPage() {
       </div>
 
       {/* PHỄU TRẠNG THÁI ĐƠN HÀNG (ORDER STATE FUNNEL) */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+      <div className="flex gap-2 overflow-x-auto pb-2 sm:grid sm:grid-cols-4 lg:grid-cols-7 sm:overflow-visible no-scrollbar">
         {FUNNEL_ITEMS.map((item) => {
           const isSelected = statusFilter === item.id;
           return (
@@ -319,7 +319,7 @@ export default function AdminOrdersPage() {
                 setStatusFilter(item.id);
                 setCurrentPage(0);
               }}
-              className={`p-2.5 rounded-xl border text-left transition-all ${
+              className={`p-2.5 rounded-xl border text-left transition-all shrink-0 min-w-[125px] sm:min-w-0 ${
                 isSelected
                   ? "border-indigo-600 ring-2 ring-indigo-500/20 bg-card shadow-sm"
                   : "border-border bg-card/60 hover:bg-card hover:border-muted-foreground/30"
@@ -413,58 +413,194 @@ export default function AdminOrdersPage() {
       {/* BẢNG DỮ LIỆU ĐƠN HÀNG */}
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-10">
-                  <button
-                    onClick={toggleSelectAll}
-                    className="flex items-center justify-center p-1"
-                    title="Chọn tất cả"
-                  >
-                    {selectedOrderIds.length > 0 &&
-                    selectedOrderIds.length === ordersData.items.length ? (
-                      <CheckSquare className="h-4 w-4 text-indigo-600" />
-                    ) : (
-                      <Square className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </button>
-                </TableHead>
-                <TableHead>Mã Đơn</TableHead>
-                <TableHead>Khách Hàng</TableHead>
-                <TableHead>Thời Gian</TableHead>
-                <TableHead>Tổng Thanh Toán</TableHead>
-                <TableHead>Hình Thức</TableHead>
-                <TableHead>Trạng Thái</TableHead>
-                <TableHead className="text-right">Hành Động</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableSkeletonRows rows={5} cols={8} />
-              ) : ordersData.items.length === 0 ? (
+          {/* 1. DESKTOP VIEW: DATA TABLE (Hidden on mobile < md) */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-12 text-xs text-muted-foreground">
-                    Không tìm thấy đơn hàng nào phù hợp với bộ lọc.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                ordersData.items.map((order) => {
-                  const statusInfo = formatOrderStatus(order.status);
-                  const isSelected = selectedOrderIds.includes(order.id);
-
-                  return (
-                    <TableRow
-                      key={order.id}
-                      className={`hover:bg-muted/40 transition-colors ${
-                        isSelected ? "bg-indigo-50/50 dark:bg-indigo-950/20" : ""
-                      }`}
+                  <TableHead className="w-10">
+                    <button
+                      onClick={toggleSelectAll}
+                      className="flex items-center justify-center p-1"
+                      title="Chọn tất cả"
                     >
-                      {/* Checkbox */}
-                      <TableCell>
+                      {selectedOrderIds.length > 0 &&
+                      selectedOrderIds.length === ordersData.items.length ? (
+                        <CheckSquare className="h-4 w-4 text-indigo-600" />
+                      ) : (
+                        <Square className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </button>
+                  </TableHead>
+                  <TableHead>Mã Đơn</TableHead>
+                  <TableHead>Khách Hàng</TableHead>
+                  <TableHead>Thời Gian</TableHead>
+                  <TableHead>Tổng Thanh Toán</TableHead>
+                  <TableHead>Hình Thức</TableHead>
+                  <TableHead>Trạng Thái</TableHead>
+                  <TableHead className="text-right">Hành Động</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableSkeletonRows rows={5} cols={8} />
+                ) : ordersData.items.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-12 text-xs text-muted-foreground">
+                      Không tìm thấy đơn hàng nào phù hợp với bộ lọc.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  ordersData.items.map((order) => {
+                    const statusInfo = formatOrderStatus(order.status);
+                    const isSelected = selectedOrderIds.includes(order.id);
+
+                    return (
+                      <TableRow
+                        key={order.id}
+                        className={`hover:bg-muted/40 transition-colors ${
+                          isSelected ? "bg-indigo-50/50 dark:bg-indigo-950/20" : ""
+                        }`}
+                      >
+                        {/* Checkbox */}
+                        <TableCell>
+                          <button
+                            onClick={() => toggleSelectOrder(order.id)}
+                            className="flex items-center justify-center p-1"
+                          >
+                            {isSelected ? (
+                              <CheckSquare className="h-4 w-4 text-indigo-600" />
+                            ) : (
+                              <Square className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </button>
+                        </TableCell>
+
+                        <TableCell className="font-mono text-xs font-bold text-foreground">
+                          {order.orderCode}
+                        </TableCell>
+
+                        <TableCell>
+                          <div className="font-semibold text-xs text-foreground">
+                            {order.customerName}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground font-mono">
+                            {order.customerPhone}
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                          {formatDate(order.createdAt)}
+                        </TableCell>
+
+                        <TableCell className="font-bold text-xs text-rose-600 whitespace-nowrap">
+                          {formatCurrency(order.finalAmount || order.totalAmount)}
+                        </TableCell>
+
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={`text-[10px] font-mono ${
+                              order.paymentMethod === "SEPAY"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300"
+                                : ""
+                            }`}
+                          >
+                            {order.paymentMethod}
+                          </Badge>
+                        </TableCell>
+
+                        <TableCell>
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${statusInfo.badgeClass}`}
+                          >
+                            {statusInfo.label}
+                          </span>
+                        </TableCell>
+
+                        <TableCell className="text-right whitespace-nowrap space-x-1">
+                          {/* Quick Action */}
+                          {order.status === "PENDING" && (
+                            <Button
+                              size="sm"
+                              variant="success"
+                              className="h-7 text-xs px-2 rounded-lg"
+                              onClick={() => handleUpdateStatus(order.id, "CONFIRMED")}
+                            >
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Duyệt
+                            </Button>
+                          )}
+                          {order.status === "CONFIRMED" && (
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white"
+                              onClick={() => handleUpdateStatus(order.id, "SHIPPING")}
+                            >
+                              <Truck className="h-3 w-3 mr-1" />
+                              Giao
+                            </Button>
+                          )}
+
+                          {/* In Phiếu Nhanh */}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0 rounded-lg text-slate-500 hover:text-foreground"
+                            onClick={() => handleOpenPrint(order)}
+                            title="In phiếu giao hàng"
+                          >
+                            <Printer className="h-3.5 w-3.5" />
+                          </Button>
+
+                          {/* Chi Tiết */}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs px-2.5 rounded-lg text-indigo-600 hover:text-indigo-700"
+                            onClick={() => handleOpenDetail(order.id)}
+                          >
+                            <Eye className="h-3.5 w-3.5 mr-1" />
+                            Chi tiết
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* 2. MOBILE VIEW: TOUCH-OPTIMIZED ORDER CARDS (Shown on < md) */}
+          <div className="md:hidden divide-y divide-border">
+            {loading ? (
+              <div className="p-6 text-center text-xs text-muted-foreground space-y-2">
+                <RefreshCw className="h-5 w-5 animate-spin mx-auto text-indigo-600" />
+                <span>Đang tải danh sách đơn hàng...</span>
+              </div>
+            ) : ordersData.items.length === 0 ? (
+              <div className="text-center py-12 text-xs text-muted-foreground">
+                Không tìm thấy đơn hàng nào phù hợp với bộ lọc.
+              </div>
+            ) : (
+              ordersData.items.map((order) => {
+                const statusInfo = formatOrderStatus(order.status);
+                const isSelected = selectedOrderIds.includes(order.id);
+
+                return (
+                  <div
+                    key={order.id}
+                    className={`p-3.5 space-y-2.5 transition-colors ${
+                      isSelected ? "bg-indigo-50/50 dark:bg-indigo-950/20" : ""
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center space-x-2">
                         <button
                           onClick={() => toggleSelectOrder(order.id)}
-                          className="flex items-center justify-center p-1"
+                          className="flex items-center justify-center p-1 rounded-md text-foreground"
+                          aria-label="Chọn đơn hàng"
                         >
                           {isSelected ? (
                             <CheckSquare className="h-4 w-4 text-indigo-600" />
@@ -472,57 +608,40 @@ export default function AdminOrdersPage() {
                             <Square className="h-4 w-4 text-muted-foreground" />
                           )}
                         </button>
-                      </TableCell>
+                        <span className="font-mono text-xs font-bold text-foreground">
+                          #{order.orderCode}
+                        </span>
+                      </div>
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusInfo.badgeClass}`}
+                      >
+                        {statusInfo.label}
+                      </span>
+                    </div>
 
-                      <TableCell className="font-mono text-xs font-bold text-foreground">
-                        {order.orderCode}
-                      </TableCell>
-
-                      <TableCell>
-                        <div className="font-semibold text-xs text-foreground">
-                          {order.customerName}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground font-mono">
-                          {order.customerPhone}
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatDate(order.createdAt)}
-                      </TableCell>
-
-                      <TableCell className="font-bold text-xs text-rose-600 whitespace-nowrap">
-                        {formatCurrency(order.finalAmount || order.totalAmount)}
-                      </TableCell>
-
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={`text-[10px] font-mono ${
-                            order.paymentMethod === "SEPAY"
-                              ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/30 dark:text-emerald-300"
-                              : ""
-                          }`}
-                        >
+                    <div className="flex items-start justify-between text-xs gap-2">
+                      <div className="min-w-0">
+                        <p className="font-bold text-foreground truncate">{order.customerName}</p>
+                        <p className="text-[11px] text-muted-foreground font-mono">{order.customerPhone}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="font-extrabold text-sm text-rose-600">
+                          {formatCurrency(order.finalAmount || order.totalAmount)}
+                        </p>
+                        <Badge variant="outline" className="text-[9px] font-mono mt-0.5">
                           {order.paymentMethod}
                         </Badge>
-                      </TableCell>
+                      </div>
+                    </div>
 
-                      <TableCell>
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${statusInfo.badgeClass}`}
-                        >
-                          {statusInfo.label}
-                        </span>
-                      </TableCell>
-
-                      <TableCell className="text-right whitespace-nowrap space-x-1">
-                        {/* Quick Action */}
+                    <div className="flex items-center justify-between pt-1.5 border-t text-[11px] text-muted-foreground gap-2">
+                      <span className="truncate">{formatDate(order.createdAt)}</span>
+                      <div className="flex items-center space-x-1.5 shrink-0">
                         {order.status === "PENDING" && (
                           <Button
                             size="sm"
                             variant="success"
-                            className="h-7 text-xs px-2 rounded-lg"
+                            className="h-7 text-xs px-2.5 rounded-lg"
                             onClick={() => handleUpdateStatus(order.id, "CONFIRMED")}
                           >
                             <CheckCircle className="h-3 w-3 mr-1" />
@@ -532,47 +651,43 @@ export default function AdminOrdersPage() {
                         {order.status === "CONFIRMED" && (
                           <Button
                             size="sm"
-                            className="h-7 text-xs px-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white"
+                            className="h-7 text-xs px-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white"
                             onClick={() => handleUpdateStatus(order.id, "SHIPPING")}
                           >
                             <Truck className="h-3 w-3 mr-1" />
                             Giao
                           </Button>
                         )}
-
-                        {/* In Phiếu Nhanh */}
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 w-7 p-0 rounded-lg text-slate-500 hover:text-foreground"
+                          className="h-7 w-7 p-0 rounded-lg text-slate-500"
                           onClick={() => handleOpenPrint(order)}
                           title="In phiếu giao hàng"
                         >
                           <Printer className="h-3.5 w-3.5" />
                         </Button>
-
-                        {/* Chi Tiết */}
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-7 text-xs px-2.5 rounded-lg text-indigo-600 hover:text-indigo-700"
+                          className="h-7 text-xs px-2 rounded-lg text-indigo-600"
                           onClick={() => handleOpenDetail(order.id)}
                         >
                           <Eye className="h-3.5 w-3.5 mr-1" />
                           Chi tiết
                         </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
 
           {/* PHÂN TRANG */}
           {ordersData.totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t">
-              <span className="text-xs text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t">
+              <span className="text-xs text-muted-foreground text-center sm:text-left">
                 Trang {ordersData.pageNo + 1} / {ordersData.totalPages} ({ordersData.totalElements} đơn)
               </span>
               <div className="flex items-center space-x-2">

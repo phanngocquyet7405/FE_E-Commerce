@@ -336,9 +336,9 @@ export default function DashboardPage() {
 
       {/* BẢNG ĐƠN HÀNG GẦN ĐÂY */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3">
           <div>
-            <CardTitle className="text-base font-bold">
+            <CardTitle className="text-sm sm:text-base font-bold">
               Đơn Hàng Gần Đây Cần Xử Lý
             </CardTitle>
             <CardDescription className="text-xs">
@@ -346,123 +346,216 @@ export default function DashboardPage() {
             </CardDescription>
           </div>
           <Link href="/dashboard/orders">
-            <Button variant="ghost" size="sm" className="text-xs text-indigo-600 hover:text-indigo-700 font-semibold gap-1">
+            <Button variant="ghost" size="sm" className="text-xs text-indigo-600 hover:text-indigo-700 font-semibold gap-1 p-0 sm:px-3">
               <span>Xem tất cả đơn hàng</span>
               <ArrowUpRight className="h-3.5 w-3.5" />
             </Button>
           </Link>
         </CardHeader>
 
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Mã Đơn</TableHead>
-                <TableHead>Khách Hàng</TableHead>
-                <TableHead>Thời Gian</TableHead>
-                <TableHead>Tổng Tiền</TableHead>
-                <TableHead>Phương Thức</TableHead>
-                <TableHead>Trạng Thái</TableHead>
-                <TableHead className="text-right">Thao Tác Admin</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentOrders.length === 0 ? (
+        <CardContent className="p-0 sm:p-6 sm:pt-0">
+          {/* 1. Desktop Table (Hidden on mobile < md) */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-xs text-muted-foreground">
-                    Chưa có đơn hàng nào được ghi nhận trên cơ sở dữ liệu.
-                  </TableCell>
+                  <TableHead>Mã Đơn</TableHead>
+                  <TableHead>Khách Hàng</TableHead>
+                  <TableHead>Thời Gian</TableHead>
+                  <TableHead>Tổng Tiền</TableHead>
+                  <TableHead>Phương Thức</TableHead>
+                  <TableHead>Trạng Thái</TableHead>
+                  <TableHead className="text-right">Thao Tác Admin</TableHead>
                 </TableRow>
-              ) : (
-                recentOrders.map((order) => {
-                  const statusInfo = formatOrderStatus(order.status);
-                  const isUpdating = updatingOrderId === order.id;
+              </TableHeader>
+              <TableBody>
+                {recentOrders.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8 text-xs text-muted-foreground">
+                      Chưa có đơn hàng nào được ghi nhận trên cơ sở dữ liệu.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  recentOrders.map((order) => {
+                    const statusInfo = formatOrderStatus(order.status);
+                    const isUpdating = updatingOrderId === order.id;
 
-                  return (
-                    <TableRow key={order.id} className="hover:bg-muted/40">
-                      <TableCell className="font-mono text-xs font-bold text-foreground">
-                        {order.orderCode}
-                      </TableCell>
+                    return (
+                      <TableRow key={order.id} className="hover:bg-muted/40">
+                        <TableCell className="font-mono text-xs font-bold text-foreground">
+                          {order.orderCode}
+                        </TableCell>
 
-                      <TableCell>
-                        <div className="font-medium text-xs text-foreground">
-                          {order.customerName}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground font-mono">
-                          {order.customerPhone}
-                        </div>
-                      </TableCell>
+                        <TableCell>
+                          <div className="font-medium text-xs text-foreground">
+                            {order.customerName}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground font-mono">
+                            {order.customerPhone}
+                          </div>
+                        </TableCell>
 
-                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatDate(order.createdAt)}
-                      </TableCell>
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                          {formatDate(order.createdAt)}
+                        </TableCell>
 
-                      <TableCell className="font-bold text-xs text-rose-600 whitespace-nowrap">
-                        {formatCurrency(order.finalAmount || order.totalAmount)}
-                      </TableCell>
+                        <TableCell className="font-bold text-xs text-rose-600 whitespace-nowrap">
+                          {formatCurrency(order.finalAmount || order.totalAmount)}
+                        </TableCell>
 
-                      <TableCell>
-                        <Badge variant="outline" className="text-[10px] font-mono">
+                        <TableCell>
+                          <Badge variant="outline" className="text-[10px] font-mono">
+                            {order.paymentMethod}
+                          </Badge>
+                        </TableCell>
+
+                        <TableCell>
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${statusInfo.badgeClass}`}
+                          >
+                            {statusInfo.label}
+                          </span>
+                        </TableCell>
+
+                        <TableCell className="text-right whitespace-nowrap space-x-1.5">
+                          {order.status === "PENDING" && (
+                            <Button
+                              size="sm"
+                              variant="success"
+                              className="h-7 text-xs px-2.5 rounded-lg"
+                              disabled={isUpdating}
+                              onClick={() => handleUpdateStatus(order.id, "CONFIRMED")}
+                            >
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Duyệt đơn
+                            </Button>
+                          )}
+                          {order.status === "CONFIRMED" && (
+                            <Button
+                              size="sm"
+                              className="h-7 text-xs px-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white"
+                              disabled={isUpdating}
+                              onClick={() => handleUpdateStatus(order.id, "SHIPPING")}
+                            >
+                              <Truck className="h-3 w-3 mr-1" />
+                              Giao hàng
+                            </Button>
+                          )}
+                          {order.status === "SHIPPING" && (
+                            <Button
+                              size="sm"
+                              variant="success"
+                              className="h-7 text-xs px-2.5 rounded-lg"
+                              disabled={isUpdating}
+                              onClick={() => handleUpdateStatus(order.id, "DELIVERED")}
+                            >
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Hoàn tất
+                            </Button>
+                          )}
+                          <Link href={`/dashboard/orders?search=${order.orderCode}`}>
+                            <Button size="sm" variant="outline" className="h-7 text-xs px-2 rounded-lg">
+                              Chi tiết
+                            </Button>
+                          </Link>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* 2. Mobile Cards (Shown on < md) */}
+          <div className="md:hidden divide-y divide-border">
+            {recentOrders.length === 0 ? (
+              <div className="text-center py-8 text-xs text-muted-foreground">
+                Chưa có đơn hàng nào được ghi nhận trên cơ sở dữ liệu.
+              </div>
+            ) : (
+              recentOrders.map((order) => {
+                const statusInfo = formatOrderStatus(order.status);
+                const isUpdating = updatingOrderId === order.id;
+
+                return (
+                  <div key={order.id} className="p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-bold text-foreground">
+                        #{order.orderCode}
+                      </span>
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${statusInfo.badgeClass}`}
+                      >
+                        {statusInfo.label}
+                      </span>
+                    </div>
+
+                    <div className="flex items-start justify-between text-xs gap-2">
+                      <div className="min-w-0">
+                        <p className="font-bold text-foreground truncate">{order.customerName}</p>
+                        <p className="text-[11px] text-muted-foreground font-mono">{order.customerPhone}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="font-extrabold text-sm text-rose-600">
+                          {formatCurrency(order.finalAmount || order.totalAmount)}
+                        </p>
+                        <Badge variant="outline" className="text-[9px] font-mono mt-0.5">
                           {order.paymentMethod}
                         </Badge>
-                      </TableCell>
+                      </div>
+                    </div>
 
-                      <TableCell>
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${statusInfo.badgeClass}`}
-                        >
-                          {statusInfo.label}
-                        </span>
-                      </TableCell>
-
-                      <TableCell className="text-right whitespace-nowrap space-x-1.5">
+                    <div className="flex items-center justify-between pt-1.5 border-t text-[11px] text-muted-foreground">
+                      <span>{formatDate(order.createdAt)}</span>
+                      <div className="flex items-center space-x-1.5">
                         {order.status === "PENDING" && (
                           <Button
                             size="sm"
                             variant="success"
-                            className="h-7 text-xs px-2.5 rounded-lg"
                             disabled={isUpdating}
                             onClick={() => handleUpdateStatus(order.id, "CONFIRMED")}
+                            className="h-7 text-xs px-2.5 rounded-lg"
                           >
                             <CheckCircle className="h-3 w-3 mr-1" />
-                            Duyệt đơn
+                            Duyệt
                           </Button>
                         )}
                         {order.status === "CONFIRMED" && (
                           <Button
                             size="sm"
-                            className="h-7 text-xs px-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white"
                             disabled={isUpdating}
                             onClick={() => handleUpdateStatus(order.id, "SHIPPING")}
+                            className="h-7 text-xs px-2.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white"
                           >
                             <Truck className="h-3 w-3 mr-1" />
-                            Giao hàng
+                            Giao
                           </Button>
                         )}
                         {order.status === "SHIPPING" && (
                           <Button
                             size="sm"
                             variant="success"
-                            className="h-7 text-xs px-2.5 rounded-lg"
                             disabled={isUpdating}
                             onClick={() => handleUpdateStatus(order.id, "DELIVERED")}
+                            className="h-7 text-xs px-2.5 rounded-lg"
                           >
                             <CheckCircle className="h-3 w-3 mr-1" />
-                            Hoàn tất
+                            Xong
                           </Button>
                         )}
                         <Link href={`/dashboard/orders?search=${order.orderCode}`}>
-                          <Button size="sm" variant="outline" className="h-7 text-xs px-2 rounded-lg">
-                            Chi tiết
+                          <Button size="sm" variant="outline" className="h-7 text-xs px-2 rounded-lg text-indigo-600">
+                            Xem
                           </Button>
                         </Link>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

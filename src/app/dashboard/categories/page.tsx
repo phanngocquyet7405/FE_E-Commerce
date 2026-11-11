@@ -306,60 +306,110 @@ export default function AdminCategoriesBrandsPage() {
       {activeTab === "categories" && (
         <Card>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tên Danh Mục</TableHead>
-                  <TableHead>Slug Đường Dẫn</TableHead>
-                  <TableHead>Mô Tả</TableHead>
-                  <TableHead className="text-right">Hành Động</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableSkeletonRows rows={4} cols={4} />
-                ) : filteredCategories.length === 0 ? (
+            {/* Desktop Table */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-10 text-xs text-muted-foreground">
-                      Chưa có danh mục nào.
-                    </TableCell>
+                    <TableHead>Tên Danh Mục</TableHead>
+                    <TableHead>Slug Đường Dẫn</TableHead>
+                    <TableHead>Mô Tả</TableHead>
+                    <TableHead className="text-right">Hành Động</TableHead>
                   </TableRow>
-                ) : (
-                  filteredCategories.map((cat) => (
-                    <TableRow key={cat.id} className="hover:bg-muted/40">
-                      <TableCell className="font-semibold text-xs text-foreground">
-                        {cat.name}
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        /{cat.slug}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground max-w-sm truncate">
-                        {cat.description || "—"}
-                      </TableCell>
-                      <TableCell className="text-right space-x-1.5 whitespace-nowrap">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs px-2 rounded-lg text-indigo-600"
-                          onClick={() => handleOpenCatEdit(cat)}
-                        >
-                          <Edit className="h-3.5 w-3.5 mr-1" />
-                          Sửa
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 text-xs px-2 rounded-lg text-rose-600 hover:bg-rose-50"
-                          onClick={() => handleDeleteCategory(cat)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableSkeletonRows rows={4} cols={4} />
+                  ) : filteredCategories.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-10 text-xs text-muted-foreground">
+                        Chưa có danh mục nào.
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    filteredCategories.map((cat) => (
+                      <TableRow key={cat.id} className="hover:bg-muted/40">
+                        <TableCell className="font-semibold text-xs text-foreground">
+                          {cat.name}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground">
+                          /{cat.slug}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground max-w-sm truncate">
+                          {cat.description || "—"}
+                        </TableCell>
+                        <TableCell className="text-right space-x-1.5 whitespace-nowrap">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs px-2 rounded-lg text-indigo-600"
+                            onClick={() => handleOpenCatEdit(cat)}
+                          >
+                            <Edit className="h-3.5 w-3.5 mr-1" />
+                            Sửa
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs px-2 rounded-lg text-rose-600 hover:bg-rose-50"
+                            onClick={() => handleDeleteCategory(cat)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden divide-y divide-border">
+              {loading ? (
+                <div className="p-6 text-center text-xs text-muted-foreground space-y-2">
+                  <RefreshCw className="h-5 w-5 animate-spin mx-auto text-indigo-600" />
+                  <span>Đang tải danh mục...</span>
+                </div>
+              ) : filteredCategories.length === 0 ? (
+                <div className="text-center py-10 text-xs text-muted-foreground">
+                  Chưa có danh mục nào.
+                </div>
+              ) : (
+                filteredCategories.map((cat) => (
+                  <div key={cat.id} className="p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-foreground">{cat.name}</span>
+                      <span className="font-mono text-[11px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                        /{cat.slug}
+                      </span>
+                    </div>
+                    {cat.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-2">{cat.description}</p>
+                    )}
+                    <div className="flex justify-end space-x-1.5 pt-1 border-t">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs px-2.5 rounded-lg text-indigo-600"
+                        onClick={() => handleOpenCatEdit(cat)}
+                      >
+                        <Edit className="h-3.5 w-3.5 mr-1" />
+                        Sửa
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 rounded-lg text-rose-600 hover:bg-rose-50"
+                        onClick={() => handleDeleteCategory(cat)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
@@ -368,75 +418,137 @@ export default function AdminCategoriesBrandsPage() {
       {activeTab === "brands" && (
         <Card>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Logo</TableHead>
-                  <TableHead>Tên Thương Hiệu</TableHead>
-                  <TableHead>Slug</TableHead>
-                  <TableHead>Mô Tả</TableHead>
-                  <TableHead className="text-right">Hành Động</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableSkeletonRows rows={4} cols={5} />
-                ) : filteredBrands.length === 0 ? (
+            {/* Desktop Table */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-10 text-xs text-muted-foreground">
-                      Chưa có thương hiệu nào.
-                    </TableCell>
+                    <TableHead>Logo</TableHead>
+                    <TableHead>Tên Thương Hiệu</TableHead>
+                    <TableHead>Slug</TableHead>
+                    <TableHead>Mô Tả</TableHead>
+                    <TableHead className="text-right">Hành Động</TableHead>
                   </TableRow>
-                ) : (
-                  filteredBrands.map((brand) => (
-                    <TableRow key={brand.id} className="hover:bg-muted/40">
-                      <TableCell>
-                        <div className="h-9 w-9 rounded-lg border bg-white relative overflow-hidden flex items-center justify-center">
-                          {brand.logoUrl ? (
-                            <Image
-                              src={brand.logoUrl}
-                              alt={brand.name}
-                              fill
-                              className="object-contain p-1"
-                            />
-                          ) : (
-                            <Award className="h-4 w-4 text-slate-400" />
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-semibold text-xs text-foreground">
-                        {brand.name}
-                      </TableCell>
-                      <TableCell className="font-mono text-xs text-muted-foreground">
-                        /{brand.slug}
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground max-w-sm truncate">
-                        {brand.description || "—"}
-                      </TableCell>
-                      <TableCell className="text-right space-x-1.5 whitespace-nowrap">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-7 text-xs px-2 rounded-lg text-indigo-600"
-                          onClick={() => handleOpenBrandEdit(brand)}
-                        >
-                          <Edit className="h-3.5 w-3.5 mr-1" />
-                          Sửa
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 text-xs px-2 rounded-lg text-rose-600 hover:bg-rose-50"
-                          onClick={() => handleDeleteBrand(brand)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableSkeletonRows rows={4} cols={5} />
+                  ) : filteredBrands.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-10 text-xs text-muted-foreground">
+                        Chưa có thương hiệu nào.
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : (
+                    filteredBrands.map((brand) => (
+                      <TableRow key={brand.id} className="hover:bg-muted/40">
+                        <TableCell>
+                          <div className="h-9 w-9 rounded-lg border bg-white relative overflow-hidden flex items-center justify-center">
+                            {brand.logoUrl ? (
+                              <Image
+                                src={brand.logoUrl}
+                                alt={brand.name}
+                                fill
+                                className="object-contain p-1"
+                              />
+                            ) : (
+                              <Award className="h-4 w-4 text-slate-400" />
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-semibold text-xs text-foreground">
+                          {brand.name}
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-muted-foreground">
+                          /{brand.slug}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground max-w-sm truncate">
+                          {brand.description || "—"}
+                        </TableCell>
+                        <TableCell className="text-right space-x-1.5 whitespace-nowrap">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-7 text-xs px-2 rounded-lg text-indigo-600"
+                            onClick={() => handleOpenBrandEdit(brand)}
+                          >
+                            <Edit className="h-3.5 w-3.5 mr-1" />
+                            Sửa
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs px-2 rounded-lg text-rose-600 hover:bg-rose-50"
+                            onClick={() => handleDeleteBrand(brand)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden divide-y divide-border">
+              {loading ? (
+                <div className="p-6 text-center text-xs text-muted-foreground space-y-2">
+                  <RefreshCw className="h-5 w-5 animate-spin mx-auto text-indigo-600" />
+                  <span>Đang tải thương hiệu...</span>
+                </div>
+              ) : filteredBrands.length === 0 ? (
+                <div className="text-center py-10 text-xs text-muted-foreground">
+                  Chưa có thương hiệu nào.
+                </div>
+              ) : (
+                filteredBrands.map((brand) => (
+                  <div key={brand.id} className="p-3.5 space-y-2">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg border bg-white relative overflow-hidden flex items-center justify-center shrink-0">
+                        {brand.logoUrl ? (
+                          <Image
+                            src={brand.logoUrl}
+                            alt={brand.name}
+                            fill
+                            className="object-contain p-1"
+                          />
+                        ) : (
+                          <Award className="h-5 w-5 text-slate-400" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-xs text-foreground truncate">{brand.name}</p>
+                        <p className="font-mono text-[10px] text-muted-foreground">/{brand.slug}</p>
+                      </div>
+                    </div>
+                    {brand.description && (
+                      <p className="text-xs text-muted-foreground line-clamp-2">{brand.description}</p>
+                    )}
+                    <div className="flex justify-end space-x-1.5 pt-1 border-t">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs px-2.5 rounded-lg text-indigo-600"
+                        onClick={() => handleOpenBrandEdit(brand)}
+                      >
+                        <Edit className="h-3.5 w-3.5 mr-1" />
+                        Sửa
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 rounded-lg text-rose-600 hover:bg-rose-50"
+                        onClick={() => handleDeleteBrand(brand)}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
